@@ -137,11 +137,13 @@ body{
 .bub::before,.bub::after{content:"";position:absolute;left:18px;width:6px;background:#fff}
 .bub::before{bottom:-3px;height:3px;box-shadow:-3px 0 0 var(--ink),3px 0 0 var(--ink)}
 .bub::after{bottom:-9px;height:6px;box-shadow:-3px 0 0 var(--ink),3px 0 0 var(--ink),0 3px 0 var(--ink)}
-.bub.l{left:1%;top:-8px;transform:rotate(-2deg)}
-.bub.r{right:0;top:66px;transform:rotate(2deg)}
-.start-mid{position:relative;width:100%;max-width:420px;height:104px;margin-top:18px}
+.bub.l{left:1%;top:120px;transform:rotate(-2deg)}
+.bub.r{right:0;top:120px;transform:rotate(2deg)}
+.start-mid{position:relative;width:100%;max-width:420px;height:156px;margin-top:14px}
+.nick{position:absolute;left:0;right:0;top:0;margin:0 auto;width:min(210px,60%);box-sizing:border-box;padding:9px 10px 8px;text-align:center;border:0;border-radius:0;outline:0;background:#fff;color:var(--ink);font:700 14px var(--font-display);box-shadow:var(--bd);filter:drop-shadow(0 4px 0 rgba(58,39,16,.3));-webkit-user-select:text;user-select:text}
+.nick::placeholder{color:#B5A27A}.nick:focus{background:#FFFBE8;box-shadow:0 -3px 0 0 var(--red),0 3px 0 0 var(--red),-3px 0 0 0 var(--red),3px 0 0 0 var(--red)}
 .bub.r::before,.bub.r::after{left:auto;right:18px}
-.pstart{position:absolute;left:0;right:0;margin:0 auto;width:max-content;top:30px;font-size:22px;padding:14px 28px 13px;letter-spacing:.14em}
+.pstart{position:absolute;left:0;right:0;margin:0 auto;width:max-content;top:58px;font-size:22px;padding:14px 28px 13px;letter-spacing:.14em}
 .pstart b{display:inline-block;margin-right:6px;color:var(--red);animation:blink .7s steps(2) infinite}
 .start-bottom{position:absolute;left:0;right:0;bottom:max(8px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:5px}
 .how{margin:0;font-family:var(--font-display);font-size:11px;letter-spacing:.2em;color:var(--ink);font-weight:700}
@@ -324,6 +326,7 @@ body{
       <p class="banner"><b>▶</b>광화문에서 청계천까지 달려라!</p>
     </div>
     <div class="start-mid">
+      <input id="nick" class="nick" type="text" maxlength="8" placeholder="닉네임을 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="닉네임">
       <span class="bub l">100점에서 시작!</span><span class="bub r">닿으면 −10점</span>
       <button id="btnStart" class="btn pbtn pstart" type="button"><b>▶</b>START</button>
     </div>
@@ -390,7 +393,7 @@ const el = {
   fScore:$('#finalScore'), fTime:$('#finalTime'), newBest:$('#newBest'),
   startBest:$('#startBest'), scoreBox:$('#hudScoreBox'), meter:$('#hudMeter'),
   overTitle:$('#overTitle'), overMsg:$('#overMsg'), card:$('#brandCard'),
-  btnShare:$('#btnShare'), shareMsg:$('#shareMsg'), shareUrl:$('#shareUrl')
+  nick:$('#nick'), btnShare:$('#btnShare'), shareMsg:$('#shareMsg'), shareUrl:$('#shareUrl')
 };
 const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -673,7 +676,13 @@ function resetRun() {
   show(el.toast, false);
 }
 function toReady() { state = 'ready'; show(el.hud, true); show(el.hint, true); }
-function startGame() { show(el.start, false); resetRun(); toReady(); }
+let nick = '';
+try { nick = (localStorage.getItem('yolkNick') || '').slice(0, 8); } catch (e) {}
+function saveNick() {
+  nick = (el.nick.value || '').replace(/\s+/g, ' ').trim().slice(0, 8);
+  try { localStorage.setItem('yolkNick', nick); } catch (e) {}
+}
+function startGame() { saveNick(); show(el.start, false); resetRun(); toReady(); }
 function retry() {
   clearTimeout(popupTimer); clearTimeout(enableTimer);
   show(el.brand, false); show(el.over, false);
@@ -718,7 +727,7 @@ function showOver() {
   const perfect = score === 100;
   el.newBest.textContent = perfect ? 'PERFECT' : 'NEW BEST';
   show(el.newBest, perfect || (isBest && score > 0));
-  el.overTitle.textContent = score > 0 ? 'FINISH!' : 'GAME OVER';
+  el.overTitle.textContent = nick ? nick + '님의 결과' : (score > 0 ? 'FINISH!' : 'GAME OVER');
   el.overMsg.textContent = perfect ? '하나도 안 깨졌어요! 쉽게 깨지지 않는 노른자'
     : score >= 70 ? '탱글탱글! 거의 완벽하게 지켜냈어요'
     : score >= 40 ? '몇 번 부딪혔지만 끄떡없어요'
@@ -1355,7 +1364,7 @@ async function copyText(txt) {
 }
 async function share() {
   const url = shareUrl();
-  const data = { title: '탱글노른자 챌린지 | LET EAT BE', text: '탱글노른자 챌린지 ' + score + '점! 너도 도전해 봐 🥚', url };
+  const data = { title: '탱글노른자 챌린지 | LET EAT BE', text: (nick ? nick + '님이 ' : '') + '탱글노른자 챌린지에서 ' + score + '점! 너도 도전해 봐 🥚', url };
   const touch = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   if (touch && navigator.share) {
     try { await navigator.share(data); return; } catch (e) { if (e && e.name === 'AbortError') return; }
@@ -1376,6 +1385,8 @@ window.addEventListener('keydown', e => {
   }
 });
 el.btnStart.addEventListener('click', startGame);
+el.nick.value = nick;
+el.nick.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); startGame(); } });
 el.btnRetry.addEventListener('click', retry);
 el.btnShare.addEventListener('click', share);
 el.btnBrandRetry.addEventListener('click', closeBrand);
