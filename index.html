@@ -112,6 +112,8 @@ body{
   box-shadow:var(--bd);
 }
 .start .eyebrow span{color:var(--red)}
+.start .eyebrow.challenge{background:var(--red);color:#fff;font-size:12px;letter-spacing:.04em}
+.start .eyebrow.challenge b{color:#FFE58A;font-weight:700}
 .start h1{margin:14px 0 0;line-height:1;font-family:var(--font-display);font-weight:700}
 .p1,.p2{display:block}
 .p1{
@@ -293,6 +295,19 @@ body{
 .btn-insta:hover{filter:brightness(1.25)}
 .btn-insta:focus-visible{outline-color:var(--gold-deep)}
 
+/* result panel in the same pixel-poster style as the intro */
+.panel{
+  width:min(calc(100% - 12px),340px);margin:6px;padding:20px 20px 14px;border:0;border-radius:0;background:#FFF7E3;
+  box-shadow:var(--bd),inset 0 0 0 3px #FFE58A;filter:drop-shadow(0 7px 0 rgba(58,39,16,.35));
+}
+.panel .eyebrow{display:inline-block;margin:0;padding:6px 11px 5px;background:var(--ink);color:#FFE58A;font-size:12px;font-weight:700;letter-spacing:.08em;box-shadow:0 0 0 2px #FFF7E3,0 0 0 5px var(--ink)}
+.panel canvas{margin-top:8px}
+.msg{margin:6px 3px 0;padding:8px 12px 7px;background:#2B1B0A;color:#FFE58A;font-family:var(--font-display);font-size:13px;line-height:1.55;font-weight:700;box-shadow:0 -3px 0 0 #2B1B0A,0 3px 0 0 #2B1B0A,-3px 0 0 0 #2B1B0A,3px 0 0 0 #2B1B0A,inset 0 0 0 2px #6A4A24}
+.scorebox{margin:22px 0 22px;gap:4px}
+.scorebox .lbl{font-size:11px;font-weight:700;color:var(--ink);letter-spacing:.2em}
+.big{font-size:68px;color:#FFD21F;line-height:1;padding-right:2px;text-shadow:var(--ol),0 5px 0 var(--ink),-3px 5px 0 var(--ink),3px 5px 0 var(--ink),0 6px 0 var(--ink)}
+.big small{font-size:20px;color:#fff;margin-left:6px;text-shadow:-2px 0 0 var(--ink),2px 0 0 var(--ink),0 -2px 0 var(--ink),0 2px 0 var(--ink),-2px -2px 0 var(--ink),2px -2px 0 var(--ink),-2px 2px 0 var(--ink),2px 2px 0 var(--ink),0 4px 0 var(--ink)}
+.newbest{margin-top:16px;padding:5px 11px 4px;background:var(--red);color:#fff;font-size:11px;font-weight:700;letter-spacing:.14em;box-shadow:0 0 0 2px var(--ink),0 4px 0 2px var(--ink)}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes popUp{from{opacity:0;transform:translateY(26px) scale(.93)}to{opacity:1;transform:none}}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.7}}
@@ -321,13 +336,13 @@ body{
     <div class="ribbon" aria-hidden="true"><span>EVENT</span></div>
     <i class="sp" style="left:16%;top:22%"></i><i class="sp s2" style="right:9%;top:11%;animation-delay:.3s"></i><i class="sp" style="right:20%;top:30%;animation-delay:.55s"></i><i class="sp s2" style="left:8%;top:35%;animation-delay:.8s"></i>
     <div class="start-top">
-      <p class="eyebrow">LET EAT BE <span>MINI GAME</span></p>
+      <p class="eyebrow" id="introChip">LET EAT BE <span>MINI GAME</span></p>
       <h1 aria-label="탱글노른자 챌린지"><span class="p1" aria-hidden="true">탱글노른자</span><span class="p2" aria-hidden="true">챌린지</span></h1>
-      <p class="banner"><b>▶</b>광화문에서 청계천까지 달려라!</p>
+      <p class="banner">광화문에서 청계천까지 달려라!</p>
     </div>
     <div class="start-mid">
       <input id="nick" class="nick" type="text" maxlength="8" placeholder="닉네임을 입력하세요" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="닉네임">
-      <span class="bub l">100점에서 시작!</span><span class="bub r">닿으면 −10점</span>
+      <span class="bub l">렛잇비 달걀은 안 깨져요!</span><span class="bub r">얼마나 탱글하길래?</span>
       <button id="btnStart" class="btn pbtn pstart" type="button"><b>▶</b>START</button>
     </div>
     <div class="start-bottom">
@@ -346,9 +361,6 @@ body{
         <span class="big"><span id="finalScore">0</span><small>/100</small></span>
         <span class="newbest" id="newBest" hidden>NEW BEST</span>
       </div>
-      <dl class="stats">
-        <div><dt>TIME</dt><dd id="finalTime">0.0s</dd></div>
-      </dl>
       <div class="btn-row">
         <button id="btnRetry" class="btn btn-ko pbtn" type="button">다시 도전하기</button>
         <button id="btnShare" class="btn btn-ko pbtn alt" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.5M8.3 13.2l7.4 4.5"/></svg>공유하기</button>
@@ -390,7 +402,7 @@ const el = {
   start:$('#start'), over:$('#over'), brand:$('#brand'), hud:$('#hud'), hint:$('#hint'), toast:$('#toast'),
   time:$('#hudTime'), score:$('#hudScore'), lv:$('#hudLv'),
   btnStart:$('#btnStart'), btnRetry:$('#btnRetry'), btnBrand:$('#btnBrand'), btnBrandRetry:$('#btnBrandRetry'), btnClose:$('#btnClose'),
-  fScore:$('#finalScore'), fTime:$('#finalTime'), newBest:$('#newBest'),
+  fScore:$('#finalScore'), newBest:$('#newBest'),
   startBest:$('#startBest'), scoreBox:$('#hudScoreBox'), meter:$('#hudMeter'),
   overTitle:$('#overTitle'), overMsg:$('#overMsg'), card:$('#brandCard'),
   nick:$('#nick'), btnShare:$('#btnShare'), shareMsg:$('#shareMsg'), shareUrl:$('#shareUrl')
@@ -723,7 +735,6 @@ function showOver() {
   const prev = best, isBest = score > prev;
   if (isBest) { best = score; try { localStorage.setItem('yolkItBeBest100', String(best)); } catch (e) {} }
   el.fScore.textContent = String(score);
-  el.fTime.textContent = Math.min(t, DURATION).toFixed(1) + 's';
   const perfect = score === 100;
   el.newBest.textContent = perfect ? 'PERFECT' : 'NEW BEST';
   show(el.newBest, perfect || (isBest && score > 0));
@@ -1344,6 +1355,20 @@ function closeBrand() {
 
 /* ---------- share ---------- */
 const FALLBACK_URL = 'https://hieggtart7.github.io/yotkitbe/';   // used when the page is opened from a non-public place (file, preview frame)
+function resultUrl() {
+  const base = shareUrl();
+  if (state !== 'over') return base;
+  return base + '?n=' + encodeURIComponent(nick) + '&s=' + score;
+}
+(function showChallenge() {                      // opened from a friend's shared link -> show their result on the intro
+  try {
+    const q = new URLSearchParams(location.search), s = parseInt(q.get('s'), 10), n = (q.get('n') || '').slice(0, 8);
+    if (!(s >= 0 && s <= 100)) return;
+    const chip = document.getElementById('introChip'); chip.className = 'eyebrow challenge';
+    chip.textContent = ''; const who = document.createElement('b'); who.textContent = n ? n + '님' : '친구';
+    chip.append(who, ' ' + s + '점! 너도 도전해 봐');
+  } catch (e) {}
+})();
 function shareUrl() {
   try { const l = location; if (/^https?:$/.test(l.protocol) && !/(claude|anthropic)/i.test(l.hostname)) return l.href.split('#')[0]; } catch (e) {}
   return FALLBACK_URL;
@@ -1362,11 +1387,51 @@ async function copyText(txt) {
     const ok = document.execCommand('copy'); ta.remove(); return !!ok;
   } catch (e) { return false; }
 }
+function makeResultImage() {
+  return new Promise(resolve => {
+    const w = 600, h = 820, [cvs, c] = mkc(w, h);
+    const INK = '#3A2710', T = (s, x, y, size, fill, stroke, lw) => {
+      c.font = '700 ' + size + 'px YolkPixel, system-ui, sans-serif'; c.textAlign = 'center'; c.lineJoin = 'round';
+      if (stroke) { c.lineWidth = lw; c.strokeStyle = stroke; c.strokeText(s, x, y); }
+      c.fillStyle = fill; c.fillText(s, x, y);
+    };
+    c.fillStyle = '#FFE8A8'; c.fillRect(0, 0, w, h); c.fillStyle = '#FFF2CE'; c.fillRect(0, h * .5, w, h * .5);
+    c.fillStyle = 'rgba(58,39,16,.3)'; c.fillRect(48, 60, 504, 720);
+    c.fillStyle = INK; c.fillRect(36, 40, 528, 732); c.fillStyle = '#FFF7E3'; c.fillRect(42, 46, 516, 720); c.fillStyle = '#FFE58A'; c.fillRect(42, 46, 516, 6);
+    const chip = (nick ? nick + '님의 결과' : 'RESULT');
+    c.font = '700 26px YolkPixel'; const cw = c.measureText(chip).width + 40;
+    c.fillStyle = INK; c.fillRect(300 - cw / 2, 84, cw, 46); T(chip, 300, 117, 26, '#FFE58A');
+    const k = c.canvas, yl = { sx: 1, sy: 1, wob: 0, ph: 0, look: overLook, blink: false };
+    c.fillStyle = 'rgba(58,39,16,.25)'; c.beginPath(); c.ellipse(300, 330, 74, 12, 0, 0, Math.PI * 2); c.fill();
+    drawYolk(c, 300, 262, 66, yl);
+    c.font = '700 24px YolkPixel'; const lines = [];
+    for (const para of String(el.overMsg.textContent).split('\n')) { let cur = ''; for (const wd of para.split(' ')) { const tr = cur ? cur + ' ' + wd : wd; if (cur && c.measureText(tr).width > 440) { lines.push(cur); cur = wd; } else cur = tr; } lines.push(cur); }
+    const bh = 24 + lines.length * 34;
+    c.fillStyle = '#2B1B0A'; c.fillRect(60, 362, 480, bh); c.strokeStyle = '#6A4A24'; c.lineWidth = 4; c.strokeRect(62, 364, 476, bh - 4);
+    lines.forEach((l, i) => T(l, 300, 362 + 34 + i * 34 - 4, 24, '#FFE58A'));
+    const y0 = 362 + bh + 42;
+    T('FINAL SCORE', 300, y0, 24, INK);
+    c.font = '700 130px YolkPixel'; const sw1 = c.measureText(String(score)).width; c.font = '700 40px YolkPixel'; const sw2 = c.measureText('/100').width + 12;
+    const sx0 = 300 - (sw1 + sw2) / 2;
+    c.textAlign = 'left'; c.font = '700 130px YolkPixel'; c.lineJoin = 'round'; c.lineWidth = 22; c.strokeStyle = INK; c.strokeText(String(score), sx0, y0 + 128); c.fillStyle = '#FFD21F'; c.fillText(String(score), sx0, y0 + 128);
+    c.font = '700 40px YolkPixel'; c.lineWidth = 10; c.strokeText('/100', sx0 + sw1 + 12, y0 + 128); c.fillStyle = '#fff'; c.fillText('/100', sx0 + sw1 + 12, y0 + 128);
+    T('탱글노른자 챌린지', 300, 724, 26, INK);
+    T('LET EAT BE', 300, 756, 20, '#B8860B');
+    cvs.toBlob(b => resolve(b), 'image/png');
+  });
+}
 async function share() {
-  const url = shareUrl();
+  const url = resultUrl();
   const data = { title: '탱글노른자 챌린지 | LET EAT BE', text: (nick ? nick + '님이 ' : '') + '탱글노른자 챌린지에서 ' + score + '점! 너도 도전해 봐 🥚', url };
   const touch = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   if (touch && navigator.share) {
+    try {
+      const blob = await makeResultImage();
+      if (blob && navigator.canShare) {
+        const file = new File([blob], 'yolk-result.png', { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: data.title, text: data.text + '\n' + url }); return; }
+      }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
     try { await navigator.share(data); return; } catch (e) { if (e && e.name === 'AbortError') return; }
   }
   if (await copyText(url)) { shareNote('링크가 복사됐어요!'); return; }
