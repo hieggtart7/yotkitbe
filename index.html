@@ -1357,20 +1357,35 @@ function closeBrand() {
 const FALLBACK_URL = 'https://hieggtart7.github.io/yotkitbe/';   // used when the page is opened from a non-public place (file, preview frame)
 function resultUrl() {
   const base = shareUrl();
-  if (state !== 'over') return base;
+  if (state !== 'over' && !sharedView) return base;
   return base + '?n=' + encodeURIComponent(nick) + '&s=' + score;
 }
-(function showChallenge() {                      // opened from a friend's shared link -> show their result on the intro
+let sharedView = false, ownNick = '';
+function showSharedFromUrl() {                   // opened from a friend's link (?n=nickname&s=score) -> their result page comes first
   try {
-    const q = new URLSearchParams(location.search), s = parseInt(q.get('s'), 10), n = (q.get('n') || '').slice(0, 8);
-    if (!(s >= 0 && s <= 100)) return;
-    const chip = document.getElementById('introChip'); chip.className = 'eyebrow challenge';
-    chip.textContent = ''; const who = document.createElement('b'); who.textContent = n ? n + '님' : '친구';
-    chip.append(who, ' ' + s + '점! 너도 도전해 봐');
+    const q = new URLSearchParams(location.search), sc = parseInt(q.get('s'), 10), n = (q.get('n') || '').replace(/\s+/g, ' ').trim().slice(0, 8);
+    if (!(sc >= 0 && sc <= 100)) return;
+    sharedView = true; ownNick = nick; nick = n; score = sc;
+    const perfect = sc === 100;
+    el.fScore.textContent = String(sc); show(el.newBest, perfect); el.newBest.textContent = 'PERFECT';
+    el.overTitle.textContent = n ? n + '님의 결과' : '친구의 결과';
+    el.overMsg.textContent = perfect ? '하나도 안 깨졌어요! 쉽게 깨지지 않는 노른자'
+      : sc >= 70 ? '탱글탱글! 거의 완벽하게 지켜냈어요'
+      : sc >= 40 ? '몇 번 부딪혔지만 끄떡없어요'
+      : sc > 0 ? '꽤 흔들렸지만 아직 탱글해요'
+      : '이렇게 부딪혔는데도 안 터졌어요!\n이 노른자에 숨겨진 비밀이 궁금하다면?';
+    overLook = sc >= 50 ? 'happy' : sc > 0 ? 'ouch' : 'dizzy';
+    el.btnRetry.textContent = '나도 도전하기';
+    show(el.start, false); show(el.over, true);
   } catch (e) {}
-})();
+}
+function leaveShared() {
+  sharedView = false; nick = ownNick; score = 100; show(el.over, false); show(el.start, true);
+  el.btnRetry.textContent = '다시 도전하기';
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+}
 function shareUrl() {
-  try { const l = location; if (/^https?:$/.test(l.protocol) && !/(claude|anthropic)/i.test(l.hostname)) return l.href.split('#')[0]; } catch (e) {}
+  try { const l = location; if (/^https?:$/.test(l.protocol) && !/(claude|anthropic)/i.test(l.hostname)) return l.origin + l.pathname; } catch (e) {}
   return FALLBACK_URL;
 }
 let shareTimer = 0;
@@ -1452,7 +1467,7 @@ window.addEventListener('keydown', e => {
 el.btnStart.addEventListener('click', startGame);
 el.nick.value = nick;
 el.nick.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); startGame(); } });
-el.btnRetry.addEventListener('click', retry);
+el.btnRetry.addEventListener('click', () => { if (sharedView) leaveShared(); else retry(); });
 el.btnShare.addEventListener('click', share);
 el.btnBrandRetry.addEventListener('click', closeBrand);
 el.btnBrand.addEventListener('click', () => { clearTimeout(popupTimer); showBrand(); });
@@ -1471,13 +1486,14 @@ Y.x = W / 2;
     Promise.race([document.fonts.load('700 11px YolkPixel', '청계천'), new Promise(r => setTimeout(r, 1800))]).then(go, go);
   } else go();
 })();
+showSharedFromUrl();
 let last = performance.now();
 document.addEventListener('visibilitychange', () => { last = performance.now(); });
 function frame(now) {
   let dt = (now - last) / 1000; last = now;
   if (!(dt > 0)) dt = 0; if (dt > .05) dt = .05;
   update(dt); render();
-  if (state === 'over' && !el.over.hidden) renderGameOverYolk();
+  if ((state === 'over' || sharedView) && !el.over.hidden) renderGameOverYolk();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
